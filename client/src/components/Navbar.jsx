@@ -36,21 +36,25 @@ export const MobileHeader = () => {
      LOGOUT
   ========================= */
 
-  const handleMobileLogout = async () => {
-    try {
-      // Remove old local/demo authentication data
-      localStorage.removeItem('ryzo_demo_auth')
-      localStorage.removeItem('ryzo_user_profile')
+ const handleLogout = async () => {
+  try {
+    console.log('Logout clicked')
 
-      // Sign out from Clerk
-      await signOut()
+    // Clear old Ryzo authentication data
+    localStorage.removeItem('ryzo_demo_auth')
+    localStorage.removeItem('ryzo_user_profile')
 
-      // Redirect to login
-      navigate('/login', { replace: true })
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
+    // Clear Clerk session
+    await signOut({
+      redirectUrl: '/login',
+    })
+  } catch (error) {
+    console.error('Logout error:', error)
+
+    // Fallback navigation
+    navigate('/login', { replace: true })
   }
+}
 
   /* =========================
      OPEN NOTIFICATIONS
@@ -124,18 +128,22 @@ export const MobileHeader = () => {
 
 
           {/* Logout */}
-          <button
-            type="button"
-            onClick={handleMobileLogout}
-            className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
-              darkMode
-                ? 'text-slate-300 hover:bg-red-500/10 hover:text-red-400'
-                : 'text-slate-600 hover:bg-red-50 hover:text-red-500'
-            }`}
-            title="Logout"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
+          const handleMobileLogout = async () => {
+  try {
+    console.log('Mobile logout clicked')
+
+    localStorage.removeItem('ryzo_demo_auth')
+    localStorage.removeItem('ryzo_user_profile')
+
+    await signOut({
+      redirectUrl: '/login',
+    })
+  } catch (error) {
+    console.error('Mobile logout error:', error)
+
+    navigate('/login', { replace: true })
+  }
+}
 
         </div>
       </div>
