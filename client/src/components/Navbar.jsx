@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 import { assets } from '../assets/assets';
-import { Home, Search, PlusSquare, Film, Heart, MessageCircle, Sparkles, X } from 'lucide-react';
+import { Home, Search, PlusSquare, Film, Heart, MessageCircle, Sparkles, X, LogOut } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const MobileHeader = () => {
@@ -9,10 +10,35 @@ export const MobileHeader = () => {
     currentUser,
     setIsNotificationsOpen,
     unreadNotificationsCount,
+    setIsDemoAuthenticated,
     darkMode,
     recentChats,
   } = useApp();
   const navigate = useNavigate();
+
+  let clerk = null;
+  try {
+    clerk = useClerk();
+  } catch (e) {
+    clerk = null;
+  }
+
+  const handleMobileLogout = async () => {
+    setIsDemoAuthenticated(false);
+    try {
+      localStorage.setItem('ryzo_demo_auth', 'false');
+      localStorage.removeItem('ryzo_user_profile');
+      if (clerk && typeof clerk.signOut === 'function') {
+        await clerk.signOut();
+      }
+    } catch (e) {
+      console.warn("Mobile logout error:", e);
+    } finally {
+      setIsDemoAuthenticated(false);
+      localStorage.setItem('ryzo_demo_auth', 'false');
+      window.location.href = '/';
+    }
+  };
 
   const unreadMessagesCount = (recentChats || []).filter(
     (c) => c && !c.seen && c.to_user_id?._id === currentUser?._id
@@ -68,6 +94,16 @@ export const MobileHeader = () => {
               {unreadMessagesCount}
             </span>
           )}
+        </button>
+
+        {/* Log Out Mobile */}
+        <button
+          onClick={handleMobileLogout}
+          className="p-1 text-slate-200 hover:text-rose-400 active:scale-95 transition-all"
+          aria-label="Log Out"
+          title="Log Out"
+        >
+          <LogOut className="size-5.5 stroke-[2] text-rose-400" />
         </button>
       </div>
     </header>
