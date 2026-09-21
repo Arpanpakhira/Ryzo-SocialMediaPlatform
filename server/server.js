@@ -29,7 +29,10 @@ const io = new Server(server, {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+origin:"https://ryzo-socialmediaplatform-client.onrender.com",
+  credentials:true
+));
 app.use(express.json());
 
 // Routes
