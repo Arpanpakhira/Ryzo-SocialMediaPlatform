@@ -36,7 +36,6 @@ export const MobileHeader = () => {
     } finally {
       setIsDemoAuthenticated(false);
       localStorage.setItem('ryzo_demo_auth', 'false');
-      window.location.href = '/';
     }
   };
 
