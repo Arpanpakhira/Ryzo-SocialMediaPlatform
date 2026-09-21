@@ -50,21 +50,7 @@ export const MobileHeader = () => {
   <LogOut className="h-5 w-5" />
 </button>
 
-  const handleLogout = async () => {
-  try {
-    console.log('Logout clicked')
-
-    localStorage.removeItem('ryzo_demo_auth')
-    localStorage.removeItem('ryzo_user_profile')
-
-    await signOut({
-      redirectUrl: '/login',
-    })
-  } catch (error) {
-    console.error('Logout error:', error)
-    navigate('/login', { replace: true })
-  }
-}
+ 
 
   /* =========================
      OPEN NOTIFICATIONS
