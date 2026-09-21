@@ -36,22 +36,32 @@ export const MobileHeader = () => {
      LOGOUT
   ========================= */
 
- const handleLogout = async () => {
+{/* Logout */}
+<button
+  type="button"
+  onClick={handleLogout}
+  className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+    darkMode
+      ? 'text-slate-300 hover:bg-red-500/10 hover:text-red-400'
+      : 'text-slate-600 hover:bg-red-50 hover:text-red-500'
+  }`}
+  title="Logout"
+>
+  <LogOut className="h-5 w-5" />
+</button>
+
+  const handleLogout = async () => {
   try {
     console.log('Logout clicked')
 
-    // Clear old Ryzo authentication data
     localStorage.removeItem('ryzo_demo_auth')
     localStorage.removeItem('ryzo_user_profile')
 
-    // Clear Clerk session
     await signOut({
       redirectUrl: '/login',
     })
   } catch (error) {
     console.error('Logout error:', error)
-
-    // Fallback navigation
     navigate('/login', { replace: true })
   }
 }
