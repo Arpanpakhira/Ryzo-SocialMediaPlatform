@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 
 export const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/ryzo', {
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://arpanpakhira8_db_user:RIwwWkOJVCmQmRCK@ryzo-cluster.7n6jvys.mongodb.net/ryzo?retryWrites=true&w=majority&appName=Ryzo-Cluster'
+, {
       serverSelectionTimeoutMS: 4000,
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
