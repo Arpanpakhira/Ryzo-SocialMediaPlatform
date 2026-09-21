@@ -52,22 +52,6 @@ export const AppProvider = ({ children }) => {
     }
   }, [currentUser]);
 
-  const [isDemoAuthenticated, setIsDemoAuthenticated] = useState(() => {
-    try {
-      const saved = localStorage.getItem('ryzo_demo_auth');
-      if (saved !== null) {
-        return saved === 'true';
-      }
-    } catch (e) {}
-    return true; // Default to true so profile links & direct URL routes work seamlessly
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('ryzo_demo_auth', String(isDemoAuthenticated));
-    } catch (e) {}
-  }, [isDemoAuthenticated]);
-
   const [accountType, setAccountType] = useState(() => {
     try {
       const saved = localStorage.getItem('ryzo_account_type');
@@ -1111,8 +1095,6 @@ export const AppProvider = ({ children }) => {
       value={{
         currentUser,
         updateProfile,
-        isDemoAuthenticated,
-        setIsDemoAuthenticated,
         posts,
         addPost,
         deletePost,
