@@ -90,11 +90,17 @@ const DashboardIcon = ({ className = "size-6", active = false }) => (
 
 const Sidebar = () => {
   let user = null;
+  let clerk = null;
   try {
-    const clerk = useUser();
-    user = clerk?.user;
+    const clerkUser = useUser();
+    user = clerkUser?.user;
   } catch (e) {
     user = null;
+  }
+  try {
+    clerk = useClerk();
+  } catch (e) {
+    clerk = null;
   }
 
   const {
@@ -124,6 +130,24 @@ const Sidebar = () => {
   const unreadMessagesCount = (recentChats || []).filter(
     (c) => c && !c.seen && c.to_user_id?._id === currentUser?._id
   ).length;
+
+  const handleLogout = async () => {
+    setIsMoreOpen(false);
+    setIsDemoAuthenticated(false);
+    try {
+      localStorage.setItem('ryzo_demo_auth', 'false');
+      localStorage.removeItem('ryzo_user_profile');
+      if (clerk && typeof clerk.signOut === 'function') {
+        await clerk.signOut();
+      }
+    } catch (e) {
+      console.warn("Logout error:", e);
+    } finally {
+      setIsDemoAuthenticated(false);
+      localStorage.setItem('ryzo_demo_auth', 'false');
+      window.location.href = '/';
+    }
+  };
 
   const handleMouseEnter = () => {
     if (leaveTimeoutRef.current) {
@@ -483,10 +507,7 @@ const Sidebar = () => {
             <div className="h-px bg-zinc-800 my-1" />
 
             <button
-              onClick={() => {
-                setIsDemoAuthenticated(false);
-                setIsMoreOpen(false);
-              }}
+              onClick={handleLogout}
               className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-rose-500/20 text-sm font-medium text-rose-400 transition-colors w-full text-left"
             >
               <LogOut className="size-4.5 text-rose-400" />
