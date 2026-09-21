@@ -36,16 +36,15 @@ class GlobalErrorBoundary extends React.Component {
             </div>
             <h2 className="text-xl font-bold text-amber-400 mb-2">Ryzo Social Hub</h2>
             <p className="text-xs text-slate-300 mb-6 leading-relaxed">
-              The application encountered a runtime update state. Click below to refresh into full Demo Mode instantly.
+              The application encountered a runtime state update. Click below to refresh.
             </p>
             <button
               onClick={() => {
-                localStorage.setItem('ryzo_demo_auth', 'true');
                 window.location.href = '/';
               }}
               className="px-6 py-3 rounded-2xl ryzo-btn-gold font-bold text-xs shadow-lg hover:scale-105 transition-all"
             >
-              Launch Ryzo Hub
+              Refresh Ryzo Hub
             </button>
           </div>
         </div>
