@@ -1,24 +1,9 @@
-import React from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { useClerk } from '@clerk/clerk-react'
-import { assets } from '../assets/assets'
-import {
-  Home,
-  Search,
-  PlusSquare,
-  Film,
-  Heart,
-  MessageCircle,
-  Sparkles,
-  X,
-  LogOut
-} from 'lucide-react'
-import { useApp } from '../context/AppContext'
-
-
-/* =========================================================
-   MOBILE HEADER
-========================================================= */
+import React, { useState } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
+import { assets } from '../assets/assets';
+import { Home, Search, PlusSquare, Film, Heart, MessageCircle, Sparkles, X, LogOut } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 export const MobileHeader = () => {
   const {
@@ -26,463 +11,266 @@ export const MobileHeader = () => {
     setIsNotificationsOpen,
     unreadNotificationsCount,
     darkMode,
-    recentChats
-  } = useApp()
+    recentChats,
+  } = useApp();
 
-  const navigate = useNavigate()
-  const { signOut } = useClerk()
+  const navigate = useNavigate();
+  const { signOut } = useClerk();
 
-  /* =========================
-     LOGOUT
-  ========================= */
+   const handleLogout = async () => {
+    try {
+      console.log('Logout clicked');
 
-{/* Logout */}
-<button
-  type="button"
-  onClick={handleLogout}
-  className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
-    darkMode
-      ? 'text-slate-300 hover:bg-red-500/10 hover:text-red-400'
-      : 'text-slate-600 hover:bg-red-50 hover:text-red-500'
-  }`}
-  title="Logout"
->
-  <LogOut className="h-5 w-5" />
-</button>
+      localStorage.removeItem('ryzo_demo_auth');
+      localStorage.removeItem('ryzo_user_profile');
 
- 
+      await signOut({
+        redirectUrl: '/login',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      navigate('/login', { replace: true });
+    }
+  };
 
-  /* =========================
-     OPEN NOTIFICATIONS
-  ========================= */
-
-  const handleNotifications = () => {
-    setIsNotificationsOpen(true)
-  }
+  const unreadMessagesCount = (recentChats || []).filter(
+    (c) => c && !c.seen && c.to_user_id?._id === currentUser?._id
+  ).length;
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-xl ${
-        darkMode
-          ? 'bg-slate-950/90 border-slate-800'
-          : 'bg-white/90 border-slate-200'
-      }`}
-    >
-      <div className="flex items-center justify-between px-4 py-3">
+    <header className={`md:hidden sticky top-0 z-40 backdrop-blur-xl border-b h-14 px-4 flex items-center justify-between transition-colors duration-300 ${darkMode
+        ? 'bg-slate-900/95 border-slate-800/80 text-slate-100 shadow-lg'
+        : 'bg-[#152316]/95 border-amber-500/20 text-slate-100 shadow-md'
+      }`}>
+      {/* Brand Logo & Name */}
+      <div
+        onClick={() => {
+          navigate('/');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        className="flex items-center gap-2.5 cursor-pointer group"
+      >
+        <img
+          src={assets.logo}
+          alt="Ryzo Logo"
+          className="size-8 object-contain transition-transform group-hover:scale-105"
+        />
+        <span className="text-xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-sm font-sans uppercase">
+          Ryzo
+        </span>
+      </div>
 
-        {/* Logo */}
-        <NavLink to="/" className="flex items-center gap-2">
-          <img
-            src={assets.logo}
-            alt="Ryzo"
-            className="h-8 w-auto object-contain"
-          />
-        </NavLink>
+      {/* Right Actions: Notifications & Direct Messages */}
+      <div className="flex items-center gap-3">
+        {/* Heart Notifications */}
+        <button
+          onClick={() => setIsNotificationsOpen(true)}
+          className="relative p-1 text-slate-200 hover:text-amber-400 active:scale-95 transition-all"
+          aria-label="Notifications"
+        >
+          <Heart className="size-6 stroke-[2]" />
+          {unreadNotificationsCount > 0 && (
+            <span className="absolute top-0.5 right-0.5 size-2 bg-rose-500 rounded-full ring-2 ring-black animate-pulse" />
+          )}
+        </button>
 
+        {/* Messages Direct Link */}
+        <button
+          onClick={() => navigate('/messages')}
+          className="relative p-1 text-slate-200 hover:text-amber-400 active:scale-95 transition-all"
+          aria-label="Direct Messages"
+        >
+          <MessageCircle className="size-6 stroke-[2]" />
+          {unreadMessagesCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center ring-2 ring-black">
+              {unreadMessagesCount}
+            </span>
+          )}
+        </button>
 
-        {/* Right Side */}
-        <div className="flex items-center gap-2">
-
-          {/* Notifications */}
-          <button
-            type="button"
-            onClick={handleNotifications}
-            className={`relative flex h-10 w-10 items-center justify-center rounded-full transition ${
-              darkMode
-                ? 'text-slate-300 hover:bg-slate-800'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <Heart className="h-5 w-5" />
-
-            {unreadNotificationsCount > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                {unreadNotificationsCount > 99
-                  ? '99+'
-                  : unreadNotificationsCount}
-              </span>
-            )}
-          </button>
-
-
-          {/* Messages */}
-          <button
-            type="button"
-            onClick={() => navigate('/messages')}
-            className={`relative flex h-10 w-10 items-center justify-center rounded-full transition ${
-              darkMode
-                ? 'text-slate-300 hover:bg-slate-800'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <MessageCircle className="h-5 w-5" />
-
-            {recentChats?.length > 0 && (
-              <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-blue-500" />
-            )}
-          </button>
-
-
-          {/* Logout */}
-          const handleMobileLogout = async () => {
-  try {
-    console.log('Mobile logout clicked')
-
-    localStorage.removeItem('ryzo_demo_auth')
-    localStorage.removeItem('ryzo_user_profile')
-
-    await signOut({
-      redirectUrl: '/login',
-    })
-  } catch (error) {
-    console.error('Mobile logout error:', error)
-
-    navigate('/login', { replace: true })
-  }
-}
-
-        </div>
+        {/* Log Out Mobile */}
+        <button
+          onClick={handleLogout}
+          className="p-1 text-slate-200 hover:text-rose-400 active:scale-95 transition-all"
+          aria-label="Log Out"
+          title="Log Out"
+        >
+          <LogOut className="size-5.5 stroke-[2] text-rose-400" />
+        </button>
       </div>
     </header>
-  )
-}
-
-
-/* =========================================================
-   MOBILE BOTTOM NAVIGATION
-========================================================= */
+  );
+};
 
 export const MobileBottomNav = () => {
-  const {
-    darkMode,
-    currentUser,
-    setIsNotificationsOpen,
-    unreadNotificationsCount
-  } = useApp()
+  const { setIsCreatePostOpen, setIsCreateStoryOpen, currentUser, darkMode } = useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
 
-  const navigate = useNavigate()
-
-  const navItems = [
-    {
-      path: '/',
-      label: 'Home',
-      icon: Home,
-      end: true
-    },
-    {
-      path: '/discover',
-      label: 'Discover',
-      icon: Search
-    },
-    {
-      path: '/create-post',
-      label: 'Create',
-      icon: PlusSquare
-    },
-    {
-      path: '/reels',
-      label: 'Reels',
-      icon: Film
-    },
-    {
-      path: '/messages',
-      label: 'Messages',
-      icon: MessageCircle
-    }
-  ]
+  const isProfileActive = location.pathname.startsWith('/profile');
 
   return (
-    <nav
-      className={`fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-xl md:hidden ${
-        darkMode
-          ? 'bg-slate-950/95 border-slate-800'
-          : 'bg-white/95 border-slate-200'
-      }`}
-    >
-      <div className="flex items-center justify-around px-2 py-2">
-
-        {navItems.map((item) => {
-          const Icon = item.icon
-
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              className={({ isActive }) =>
-                `relative flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 transition ${
-                  isActive
-                    ? darkMode
-                      ? 'text-white'
-                      : 'text-slate-900'
-                    : darkMode
-                      ? 'text-slate-500'
-                      : 'text-slate-500'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <Icon
-                    className={`h-5 w-5 ${
-                      isActive ? 'stroke-[2.5]' : 'stroke-2'
-                    }`}
-                  />
-
-                  <span className="text-[10px] font-medium">
-                    {item.label}
-                  </span>
-
-                  {/* Active indicator */}
-                  {isActive && (
-                    <span
-                      className={`absolute -bottom-1 h-1 w-1 rounded-full ${
-                        darkMode ? 'bg-white' : 'bg-slate-900'
-                      }`}
-                    />
-                  )}
-                </>
-              )}
-            </NavLink>
-          )
-        })}
-
-      </div>
-    </nav>
-  )
-}
-
-
-/* =========================================================
-   DESKTOP NAVBAR
-========================================================= */
-
-const Navbar = () => {
-  const {
-    currentUser,
-    setIsNotificationsOpen,
-    unreadNotificationsCount,
-    darkMode
-  } = useApp()
-
-  const navigate = useNavigate()
-  const { signOut } = useClerk()
-
-  /* =========================
-     LOGOUT
-  ========================= */
-
-  const handleLogout = async () => {
-    try {
-      localStorage.removeItem('ryzo_demo_auth')
-      localStorage.removeItem('ryzo_user_profile')
-
-      await signOut()
-
-      navigate('/login', { replace: true })
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
-
-  const navItems = [
-    {
-      path: '/',
-      label: 'Home',
-      icon: Home,
-      end: true
-    },
-    {
-      path: '/discover',
-      label: 'Discover',
-      icon: Search
-    },
-    {
-      path: '/reels',
-      label: 'Reels',
-      icon: Film
-    },
-    {
-      path: '/messages',
-      label: 'Messages',
-      icon: MessageCircle
-    },
-    {
-      path: '/connections',
-      label: 'Connections',
-      icon: Sparkles
-    },
-    {
-      path: '/analytics',
-      label: 'Analytics',
-      icon: Search
-    }
-  ]
-
-  return (
-    <aside
-      className={`hidden md:flex fixed left-0 top-0 bottom-0 z-40 w-64 flex-col border-r ${
-        darkMode
-          ? 'bg-slate-950 border-slate-800'
-          : 'bg-white border-slate-200'
-      }`}
-    >
-
-      {/* Logo */}
-      <div className="flex h-20 items-center px-6">
-        <NavLink to="/">
-          <img
-            src={assets.logo}
-            alt="Ryzo"
-            className="h-9 w-auto object-contain"
-          />
-        </NavLink>
-      </div>
-
-
-      {/* Navigation */}
-      <div className="flex-1 px-4 py-4">
-
-        <div className="space-y-2">
-
-          {navItems.map((item) => {
-            const Icon = item.icon
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.end}
-                className={({ isActive }) =>
-                  `flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition ${
-                    isActive
-                      ? darkMode
-                        ? 'bg-slate-800 text-white'
-                        : 'bg-slate-100 text-slate-900'
-                      : darkMode
-                        ? 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`
-                }
+    <>
+      {/* Mobile Create Popup Sheet */}
+      {showCreateMenu && (
+        <div
+          onClick={() => setShowCreateMenu(false)}
+          className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end justify-center p-3 animate-in fade-in duration-150"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-3xl p-4 shadow-2xl flex flex-col gap-2 mb-16 animate-in slide-in-from-bottom-5 duration-200"
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+              <span className="text-sm font-bold text-white">Create New</span>
+              <button
+                onClick={() => setShowCreateMenu(false)}
+                className="p-1 rounded-full text-slate-400 hover:text-white"
               >
-                <Icon className="h-5 w-5" />
-                <span>{item.label}</span>
-              </NavLink>
-            )
-          })}
+                <X className="size-4.5" />
+              </button>
+            </div>
 
-
-          {/* Create Post */}
-          <NavLink
-            to="/create-post"
-            className={({ isActive }) =>
-              `flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition ${
-                isActive
-                  ? darkMode
-                    ? 'bg-slate-800 text-white'
-                    : 'bg-slate-100 text-slate-900'
-                  : darkMode
-                    ? 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`
-            }
-          >
-            <PlusSquare className="h-5 w-5" />
-            <span>Create Post</span>
-          </NavLink>
-
-
-          {/* Notifications */}
-          <button
-            type="button"
-            onClick={() => setIsNotificationsOpen(true)}
-            className={`relative flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition ${
-              darkMode
-                ? 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-          >
-            <Heart className="h-5 w-5" />
-            <span>Notifications</span>
-
-            {unreadNotificationsCount > 0 && (
-              <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                {unreadNotificationsCount > 99
-                  ? '99+'
-                  : unreadNotificationsCount}
-              </span>
-            )}
-          </button>
-
-        </div>
-
-      </div>
-
-
-      {/* Bottom section */}
-      <div className="border-t p-4">
-
-        {/* Profile */}
-        <button
-          type="button"
-          onClick={() => navigate('/profile')}
-          className={`mb-3 flex w-full items-center gap-3 rounded-xl p-2 text-left transition ${
-            darkMode
-              ? 'hover:bg-slate-900'
-              : 'hover:bg-slate-50'
-          }`}
-        >
-
-          <img
-            src={
-              currentUser?.profile_picture ||
-              assets.default_avatar
-            }
-            alt={currentUser?.full_name || 'Profile'}
-            className="h-10 w-10 rounded-full object-cover"
-          />
-
-          <div className="min-w-0 flex-1">
-
-            <p
-              className={`truncate text-sm font-semibold ${
-                darkMode ? 'text-white' : 'text-slate-900'
-              }`}
+            <button
+              onClick={() => {
+                setShowCreateMenu(false);
+                setIsCreatePostOpen(true);
+              }}
+              className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 active:bg-white/15 text-left transition-colors"
             >
-              {currentUser?.full_name || 'User'}
-            </p>
+              <div className="size-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                <PlusSquare className="size-5" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white">Post</span>
+                <span className="text-xs text-slate-400">Share photo or text post</span>
+              </div>
+            </button>
 
-            <p
-              className={`truncate text-xs ${
-                darkMode ? 'text-slate-500' : 'text-slate-500'
-              }`}
+            <button
+              onClick={() => {
+                setShowCreateMenu(false);
+                setIsCreateStoryOpen(true);
+              }}
+              className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 active:bg-white/15 text-left transition-colors"
             >
-              @{currentUser?.username || 'user'}
-            </p>
+              <div className="size-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                <Sparkles className="size-5" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white">Story</span>
+                <span className="text-xs text-slate-400">Add photo, video, or text story</span>
+              </div>
+            </button>
 
+            <button
+              onClick={() => {
+                setShowCreateMenu(false);
+                navigate('/reels');
+              }}
+              className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 active:bg-white/15 text-left transition-colors"
+            >
+              <div className="size-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                <Film className="size-5" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white">Reel</span>
+                <span className="text-xs text-slate-400">Watch or create video reels</span>
+              </div>
+            </button>
           </div>
+        </div>
+      )}
 
-        </button>
-
-
-        {/* Logout */}
-        <button
-          type="button"
-          onClick={handleLogout}
-          className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
-            darkMode
-              ? 'text-red-400 hover:bg-red-500/10'
-              : 'text-red-500 hover:bg-red-50'
-          }`}
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-xl border-t h-14 px-3 flex items-center justify-around pb-safe select-none transition-colors duration-300 ${darkMode
+          ? 'bg-slate-900/95 border-slate-800/80 text-slate-100 shadow-2xl'
+          : 'bg-[#152316]/95 border-amber-500/20 text-slate-100 shadow-2xl'
+        }`}>
+        {/* 1. Home / Feed */}
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            `flex items-center justify-center p-2 rounded-xl transition-all active:scale-90 ${isActive
+              ? 'text-amber-400 font-bold'
+              : 'text-slate-400 hover:text-slate-200'
+            }`
+          }
+          aria-label="Feed"
         >
-          <LogOut className="h-5 w-5" />
-          <span>Logout</span>
+          {({ isActive }) => (
+            <Home className={`size-6 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+          )}
+        </NavLink>
+
+        {/* 2. Search / Explore */}
+        <NavLink
+          to="/discover"
+          className={({ isActive }) =>
+            `flex items-center justify-center p-2 rounded-xl transition-all active:scale-90 ${isActive
+              ? 'text-amber-400 font-bold'
+              : 'text-slate-400 hover:text-slate-200'
+            }`
+          }
+          aria-label="Explore"
+        >
+          {({ isActive }) => (
+            <Search className={`size-6 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+          )}
+        </NavLink>
+
+        {/* 3. Create Button (Post / Story / Reel) */}
+        <button
+          onClick={() => setShowCreateMenu(!showCreateMenu)}
+          className={`flex items-center justify-center p-1.5 rounded-xl transition-all active:scale-90 ${darkMode
+              ? 'text-amber-400 hover:text-amber-300'
+              : 'text-amber-400 hover:text-amber-300'
+            }`}
+          aria-label="Create Post or Story"
+        >
+          <div className="size-8 rounded-lg border-2 border-amber-400 flex items-center justify-center shadow-md shadow-amber-500/20">
+            <PlusSquare className="size-5 text-amber-400 stroke-[2.2]" />
+          </div>
         </button>
 
-      </div>
+        {/* 4. Reels */}
+        <NavLink
+          to="/reels"
+          className={({ isActive }) =>
+            `flex items-center justify-center p-2 rounded-xl transition-all active:scale-90 ${isActive
+              ? 'text-amber-400 font-bold'
+              : 'text-slate-400 hover:text-slate-200'
+            }`
+          }
+          aria-label="Reels"
+        >
+          {({ isActive }) => (
+            <Film className={`size-6 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+          )}
+        </NavLink>
 
-    </aside>
-  )
-}
+        {/* 5. Profile */}
+        <NavLink
+          to="/profile"
+          className="flex items-center justify-center p-1.5 rounded-xl transition-all active:scale-90"
+          aria-label="Profile"
+        >
+          <div className={`size-7 rounded-full p-[1.5px] transition-all ${isProfileActive
+              ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900 scale-105'
+              : 'opacity-85 hover:opacity-100 ring-1 ring-white/20'
+            }`}>
+            <img
+              src={currentUser?.profile_picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200'}
+              alt={currentUser?.full_name || 'Profile'}
+              className="size-full rounded-full object-cover"
+            />
+          </div>
+        </NavLink>
+      </nav>
+    </>
+  );
+};
 
-export default Navbar
+export default MobileHeader;
+
